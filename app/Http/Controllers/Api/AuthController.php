@@ -20,6 +20,7 @@ class AuthController extends Controller
 
     // create a method logut
     public function logout(){
+        // try catch
         try{
             auth()->user()->tokens()->delete();
             return $this->apiSuccess('Tokens Revoked');
@@ -30,16 +31,18 @@ class AuthController extends Controller
             ));
         }
     }
-
+    // create a method register with parameter RegisterRequest $request
     public function register(RegisterRequest $request){
+        // create a new user
         $validated = $request->validated();
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
-
+        // create a token for the user
         $token = $user->createToken('auth_token')->plainTextToken;
+        // return this apiSuccess
         return $this->apiSuccess([
             'token'=> $token,
             'token-type' => 'Bearer',
@@ -47,16 +50,20 @@ class AuthController extends Controller
         ]);
     }
 
+    // create a method login with parameter LoginRequest $request
     public function login(LoginRequest $request){
+        // create validation
         $validated = $request->validated();
 
         if(!Auth::attempt($validated)){
             return $this->apiError('Credentials not match', Response::HTTP_UNAUTHORIZED);
         }
 
+        // find user
         $user = User::where('email', $validated['email'])->first();
+        // create a token for the user
         $token = $user->createToken('auth_token')->plainTextToken;
-
+        // return this apiSuccess
         return $this->apiSuccess([
             'token' => $token,
             'token_type' => 'Bearer',
